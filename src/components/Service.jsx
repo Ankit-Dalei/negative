@@ -1,5 +1,5 @@
 import { useRef } from 'react';
-import { services } from '../data.jsx/ServiceData';
+import { services } from '../data/ServiceData';
 
 const Service = () => {
   const cardRefs = useRef([]);

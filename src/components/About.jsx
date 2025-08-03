@@ -1,5 +1,5 @@
 import TeamMember from '../TeamMember';
-import { team, stats, features } from '../data.jsx/AboutData';
+import { team, stats, features } from '../data/AboutData';
 import { useState, useRef } from 'react';
 
 const About = () => {
