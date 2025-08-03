@@ -2,7 +2,7 @@ import { useState, useRef } from 'react';
 import { 
   FaGlobe,FaLightbulb, FaCog, FaLock
 } from 'react-icons/fa';
-import { features, stats, testimonials, pricingTiers } from '../data/homeData';
+import { features, stats, testimonials, pricingTiers } from '../data/HomeData';
 
 export default function Home() {
   const [activeCard, setActiveCard] = useState(null);
