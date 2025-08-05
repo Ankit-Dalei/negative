@@ -12,4 +12,10 @@ export default defineConfig({
     react(),
     tailwindcss()
   ],
+   build: {
+    minify: 'terser', // Ensure minification is enabled (default in production)
+  },
+  define: {
+    'process.env.NODE_ENV': JSON.stringify('production'), // Force production mode
+  },
 })
