@@ -1,6 +1,6 @@
 export const GetUser = async (loginData) => {
   try {
-    const response = await fetch(import.meta.env.BASE_URL+`Logindata`, {
+    const response = await fetch(process.env.BASE_URL+`Logindata`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

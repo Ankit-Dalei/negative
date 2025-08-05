@@ -1,6 +1,6 @@
 export const CreateUserData = async (data) => {
   try {
-    const response = await fetch(import.meta.env.BASE_URL+`Signdata`, {
+    const response = await fetch(process.env.BASE_URL+`Signdata`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
