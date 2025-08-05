@@ -1,6 +1,3 @@
-import { base_url } from "../Apis/ApiKeys";
-
-// src/services/loginService/GetUser.js
 export const GetUser = async (loginData) => {
   try {
     const response = await fetch(process.env.BASE_URL+`Logindata`, {
