@@ -1,18 +1,92 @@
 import { useState } from 'react';
 import { FaLock, FaUser, FaEye, FaEyeSlash, FaArrowRight } from 'react-icons/fa';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const Login = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [formData, setFormData] = useState({
+    email: '',
+    password: ''
+  });
+  const [errors, setErrors] = useState({
+    email: '',
+    password: '',
+    general: ''
+  });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const validateForm = () => {
+    let valid = true;
+    const newErrors = { email: '', password: '', general: '' };
+
+    // Email validation
+    if (!formData.email) {
+      newErrors.email = 'Email is required';
+      valid = false;
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = 'Please enter a valid email address';
+      valid = false;
+    }
+
+    // Password validation
+    if (!formData.password) {
+      newErrors.password = 'Password is required';
+      valid = false;
+    } else if (formData.password.length < 6) {
+      newErrors.password = 'Password must be at least 6 characters';
+      valid = false;
+    }
+
+    setErrors(newErrors);
+    return valid;
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+    // Clear error when user types
+    if (errors[name]) {
+      setErrors(prev => ({
+        ...prev,
+        [name]: '',
+        general: ''
+      }));
+    }
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    if (!validateForm()) return;
+    
     setIsLoading(true);
-    // Authentication logic here
-    setTimeout(() => setIsLoading(false), 1500);
+    setErrors(prev => ({ ...prev, general: '' }));
+
+    try {
+      const response=true
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Login failed');
+      }
+
+      // Handle successful login
+      localStorage.setItem('authToken', data.token); // if using JWT
+      navigate('/dashboard'); // redirect to dashboard
+
+    } catch (error) {
+      setErrors(prev => ({
+        ...prev,
+        general: error.message || 'An error occurred during login'
+      }));
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -47,6 +121,12 @@ const Login = () => {
 
           {/* Login Form */}
           <form onSubmit={handleSubmit} className="px-8 pb-8">
+            {errors.general && (
+              <div className="mb-4 p-3 bg-red-900 bg-opacity-50 text-red-300 rounded-lg text-sm">
+                {errors.general}
+              </div>
+            )}
+            
             <div className="space-y-5">
               {/* Email Field */}
               <div className="relative">
@@ -55,12 +135,17 @@ const Login = () => {
                 </div>
                 <input
                   type="email"
-                  className="w-full pl-10 pr-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                  name="email"
+                  className={`w-full pl-10 pr-4 py-3 bg-gray-700 border ${
+                    errors.email ? 'border-red-500' : 'border-gray-600'
+                  } rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent`}
                   placeholder="Email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
+                  value={formData.email}
+                  onChange={handleChange}
                 />
+                {errors.email && (
+                  <p className="mt-1 text-sm text-red-400">{errors.email}</p>
+                )}
               </div>
 
               {/* Password Field */}
@@ -70,11 +155,13 @@ const Login = () => {
                 </div>
                 <input
                   type={showPassword ? 'text' : 'password'}
-                  className="w-full pl-10 pr-12 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                  name="password"
+                  className={`w-full pl-10 pr-12 py-3 bg-gray-700 border ${
+                    errors.password ? 'border-red-500' : 'border-gray-600'
+                  } rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent`}
                   placeholder="Password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
+                  value={formData.password}
+                  onChange={handleChange}
                 />
                 <button
                   type="button"
@@ -87,6 +174,9 @@ const Login = () => {
                     <FaEye className="text-gray-400 hover:text-red-400" />
                   )}
                 </button>
+                {errors.password && (
+                  <p className="mt-1 text-sm text-red-400">{errors.password}</p>
+                )}
               </div>
 
               {/* Remember & Forgot */}
