@@ -5,7 +5,8 @@ import tailwindcss from '@tailwindcss/vite'
 export default defineConfig({
   server: {
     port: parseInt(process.env.PORT) || 4040,
-    host: '0.0.0.0'
+    host: '0.0.0.0',
+    allowedHosts: ['negative-burm.onrender.com']
   },
   plugins: [
     react(),
