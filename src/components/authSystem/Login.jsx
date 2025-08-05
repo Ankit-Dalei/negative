@@ -1,31 +1,34 @@
 import { useState } from 'react';
 import { FaLock, FaUser, FaEye, FaEyeSlash, FaArrowRight } from 'react-icons/fa';
 import { Link, useNavigate } from 'react-router-dom';
+import { GetUser } from '../../services/loginService/GetUser';
+import { useRole } from "../../contestApi/UserContextProvider";
 
 const Login = () => {
   const [formData, setFormData] = useState({
-    email: '',
+    username: '',
     password: ''
   });
   const [errors, setErrors] = useState({
-    email: '',
+    username: '',
     password: '',
     general: ''
   });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const { setRole } = useRole();
   const navigate = useNavigate();
 
   const validateForm = () => {
     let valid = true;
-    const newErrors = { email: '', password: '', general: '' };
+    const newErrors = { username: '', password: '', general: '' };
 
-    // Email validation
-    if (!formData.email) {
-      newErrors.email = 'Email is required';
+    // Username validation
+    if (!formData.username.trim()) {
+      newErrors.username = 'Username is required';
       valid = false;
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'Please enter a valid email address';
+    } else if (formData.username.trim().length < 3) {
+      newErrors.username = 'Username must be at least 3 characters';
       valid = false;
     }
 
@@ -67,22 +70,26 @@ const Login = () => {
     setErrors(prev => ({ ...prev, general: '' }));
 
     try {
-      const response=true
+      const response = await GetUser({
+        username: formData.username,
+        password: formData.password
+      })
 
       const data = await response.json();
 
       if (!response.ok) {
         throw new Error(data.message || 'Login failed');
       }
-
       // Handle successful login
-      localStorage.setItem('authToken', data.token); // if using JWT
-      navigate('/dashboard'); // redirect to dashboard
+      localStorage.setItem('authToken', data.token); // Store the token
+      setRole(`${data.role}` || "user")
+      localStorage.setItem('role', data.role); // Store user data if needed
+      navigate('/home'); // Redirect to dashboard
 
     } catch (error) {
       setErrors(prev => ({
         ...prev,
-        general: error.message || 'An error occurred during login'
+        general: error.message || 'Invalid username or password'
       }));
     } finally {
       setIsLoading(false);
@@ -128,23 +135,23 @@ const Login = () => {
             )}
             
             <div className="space-y-5">
-              {/* Email Field */}
+              {/* Username Field */}
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <FaUser className="text-gray-500" />
                 </div>
                 <input
-                  type="email"
-                  name="email"
+                  type="text"
+                  name="username"
                   className={`w-full pl-10 pr-4 py-3 bg-gray-700 border ${
-                    errors.email ? 'border-red-500' : 'border-gray-600'
+                    errors.username ? 'border-red-500' : 'border-gray-600'
                   } rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent`}
-                  placeholder="Email"
-                  value={formData.email}
+                  placeholder="Username"
+                  value={formData.username}
                   onChange={handleChange}
                 />
-                {errors.email && (
-                  <p className="mt-1 text-sm text-red-400">{errors.email}</p>
+                {errors.username && (
+                  <p className="mt-1 text-sm text-red-400">{errors.username}</p>
                 )}
               </div>
 

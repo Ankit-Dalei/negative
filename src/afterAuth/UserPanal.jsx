@@ -29,7 +29,8 @@ const UserPanel = () => {
 
   const handleLogout = () => {
     localStorage.removeItem('authToken');
-    navigate('/login');
+    localStorage.removeItem('role');
+    navigate('/');
   };
 
   // Function to check if a path is active
@@ -78,7 +79,7 @@ const UserPanel = () => {
           </div>
           <button 
             onClick={handleLogout}
-            className="flex items-center w-full p-3 rounded-lg hover:bg-gray-100 text-red-500"
+            className="flex items-center w-full p-3 rounded-lg hover:bg-gray-100 text-red-500 cursor-pointer"
           >
             <FiLogOut className="mr-3" />
             Logout

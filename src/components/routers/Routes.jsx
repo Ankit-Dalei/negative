@@ -1,6 +1,10 @@
 import {
-  createBrowserRouter
-} from "react-router";
+  createBrowserRouter,
+  Navigate,
+} from "react-router-dom";
+import { useRole } from "../../contestApi/UserContextProvider";
+
+// Common pages
 import NavCombo from '../reUseComponents/NavCombo'
 import Home from '../Home'
 import About from '../About'
@@ -9,6 +13,8 @@ import Contact from '../Contact'
 import Login from "../authSystem/Login";
 import Signup from "../authSystem/Signup";
 import ForgotPasswordPage from "../authSystem/ForgetPass";
+
+// Protected user pages
 import UserPanel from "../../afterAuth/UserPanal";
 import Dashboard from "../../afterAuth/Dashboard";
 import Analytics from "../../afterAuth/Analytics";
@@ -17,30 +23,73 @@ import ApiManager from "../../afterAuth/ApiManager";
 import CloudStorage from "../../afterAuth/CloudStorage";
 import Security from "../../afterAuth/Security";
 
-const router = createBrowserRouter([
-  {
-    path: "/",
-    element: <NavCombo/>,
-    children:[
-        { index: true, Component: Home },
-        { path: "about", Component: About },
-        { path: "services", Component: Service },
-        { path: "contact", Component: Contact },
-        { path: "login", Component: Login },
-        { path: "signup", Component: Signup },
-        { path: "forgot-password", Component: ForgotPasswordPage },
-    ]
-  },{
-    path: "home",
-    element: <UserPanel/>, 
-    children:[
-      { index: true, Component: Dashboard },
-      { path: "analytics", Component: Analytics },
-      { path: "database", Component: Database },
-      { path: "api", Component: ApiManager },
-      { path: "storage", Component: CloudStorage },
-      { path: "security", Component: Security },
-    ]
+// // Admin pages (Example)
+// import AdminPanel from "../../afterAuth/admin/AdminPanel";
+// import AdminUsers from "../../afterAuth/admin/AdminUsers";
+
+// Protected route handler
+const ProtectedRoute = ({ allowedRoles, children }) => {
+  const role = localStorage.getItem('role')
+  console.log(role)
+
+  if (!allowedRoles.includes(role)) {
+    return <Navigate to="/" replace />;
   }
+
+  return children;
+};
+
+// Guest Routes
+const guestRoutes = {
+  path: "/",
+  element: <NavCombo />,
+  children: [
+    { index: true, Component: Home },
+    { path: "about", Component: About },
+    { path: "services", Component: Service },
+    { path: "contact", Component: Contact },
+    { path: "login", Component: Login },
+    { path: "signup", Component: Signup },
+    { path: "forgot-password", Component: ForgotPasswordPage },
+  ]
+};
+
+// User Routes
+const userRoutes = {
+  path: "home",
+  element: (
+    <ProtectedRoute allowedRoles={["user"]}>
+      <UserPanel />
+    </ProtectedRoute>
+  ),
+  children: [
+    { index: true, Component: Dashboard },
+    { path: "analytics", Component: Analytics },
+    { path: "database", Component: Database },
+    { path: "api", Component: ApiManager },
+    { path: "storage", Component: CloudStorage },
+    { path: "security", Component: Security },
+  ]
+};
+
+// // Admin Routes
+// const adminRoutes = {
+//   path: "admin",
+//   element: (
+//     <ProtectedRoute allowedRoles={["admin"]}>
+//       <AdminPanel />
+//     </ProtectedRoute>
+//   ),
+//   children: [
+//     { index: true, Component: Dashboard }, // Admin dashboard
+//     { path: "users", Component: AdminUsers },
+//     // Add more admin-only routes here
+//   ]
+// };
+
+const AppRoutes = createBrowserRouter([
+  guestRoutes,
+  userRoutes
 ]);
-export default router
+
+export default AppRoutes;

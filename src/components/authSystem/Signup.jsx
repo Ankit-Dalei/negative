@@ -1,20 +1,28 @@
 import { useState } from 'react';
 import { FaUser, FaEnvelope, FaLock, FaEye, FaEyeSlash, FaArrowRight, FaCheckCircle } from 'react-icons/fa';
 import { Link, useNavigate } from 'react-router-dom';
+import { CreateUserData } from '../../services/loginService/CreateUser';
 
 const Signup = () => {
   const [formData, setFormData] = useState({
-    name: '',
+    firstName: '',
+    lastName: '',
+    username: '',
     email: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    role: 'user' // Fixed role as 'user'
   });
+  
   const [errors, setErrors] = useState({
-    name: '',
+    firstName: '',
+    lastName: '',
+    username: '',
     email: '',
     password: '',
     confirmPassword: ''
   });
+  
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
@@ -23,18 +31,41 @@ const Signup = () => {
   const validateForm = () => {
     let isValid = true;
     const newErrors = {
-      name: '',
+      firstName: '',
+      lastName: '',
+      username: '',
       email: '',
       password: '',
       confirmPassword: ''
     };
 
-    // Name validation
-    if (!formData.name.trim()) {
-      newErrors.name = 'Name is required';
+    // First Name validation
+    if (!formData.firstName.trim()) {
+      newErrors.firstName = 'First name is required';
       isValid = false;
-    } else if (formData.name.trim().length < 3) {
-      newErrors.name = 'Name must be at least 3 characters';
+    } else if (formData.firstName.trim().length < 2) {
+      newErrors.firstName = 'First name must be at least 2 characters';
+      isValid = false;
+    }
+
+    // Last Name validation
+    if (!formData.lastName.trim()) {
+      newErrors.lastName = 'Last name is required';
+      isValid = false;
+    } else if (formData.lastName.trim().length < 2) {
+      newErrors.lastName = 'Last name must be at least 2 characters';
+      isValid = false;
+    }
+
+    // Username validation
+    if (!formData.username.trim()) {
+      newErrors.username = 'Username is required';
+      isValid = false;
+    } else if (formData.username.trim().length < 3) {
+      newErrors.username = 'Username must be at least 3 characters';
+      isValid = false;
+    } else if (!/^[a-zA-Z0-9_]+$/.test(formData.username)) {
+      newErrors.username = 'Username can only contain letters, numbers and underscores';
       isValid = false;
     }
 
@@ -86,9 +117,17 @@ const Signup = () => {
     setIsLoading(true);
 
     try {
-      // Simulate API call
-      const response = true
+      // Create user with the fixed 'user' role
+      const userData = {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        username: formData.username,
+        email: formData.email,
+        password: formData.password,
+        role: 'user'
+      };
 
+      const response = await CreateUserData(userData);
       const data = await response.json();
 
       if (!response.ok) {
@@ -170,23 +209,63 @@ const Signup = () => {
             )}
 
             <div className="space-y-5">
-              {/* Name Field */}
+              {/* First Name Field */}
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <FaUser className="text-gray-500" />
                 </div>
                 <input
                   type="text"
-                  name="name"
+                  name="firstName"
                   className={`w-full pl-10 pr-4 py-3 bg-gray-700 border ${
-                    errors.name ? 'border-red-500' : 'border-gray-600'
+                    errors.firstName ? 'border-red-500' : 'border-gray-600'
                   } rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent`}
-                  placeholder="Full Name"
-                  value={formData.name}
+                  placeholder="First Name"
+                  value={formData.firstName}
                   onChange={handleChange}
                 />
-                {errors.name && (
-                  <p className="mt-1 text-sm text-red-400">{errors.name}</p>
+                {errors.firstName && (
+                  <p className="mt-1 text-sm text-red-400">{errors.firstName}</p>
+                )}
+              </div>
+
+              {/* Last Name Field */}
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <FaUser className="text-gray-500" />
+                </div>
+                <input
+                  type="text"
+                  name="lastName"
+                  className={`w-full pl-10 pr-4 py-3 bg-gray-700 border ${
+                    errors.lastName ? 'border-red-500' : 'border-gray-600'
+                  } rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent`}
+                  placeholder="Last Name"
+                  value={formData.lastName}
+                  onChange={handleChange}
+                />
+                {errors.lastName && (
+                  <p className="mt-1 text-sm text-red-400">{errors.lastName}</p>
+                )}
+              </div>
+
+              {/* Username Field */}
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <FaUser className="text-gray-500" />
+                </div>
+                <input
+                  type="text"
+                  name="username"
+                  className={`w-full pl-10 pr-4 py-3 bg-gray-700 border ${
+                    errors.username ? 'border-red-500' : 'border-gray-600'
+                  } rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent`}
+                  placeholder="Username"
+                  value={formData.username}
+                  onChange={handleChange}
+                />
+                {errors.username && (
+                  <p className="mt-1 text-sm text-red-400">{errors.username}</p>
                 )}
               </div>
 
