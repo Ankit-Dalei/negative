@@ -1,8 +1,6 @@
-import { base_url } from "../Apis/ApiKeys";
-
 export const CreateUserData = async (data) => {
   try {
-    const response = await fetch(base_url+`Signdata`, {
+    const response = await fetch(process.env.BASE_URL+`Signdata`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
