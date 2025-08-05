@@ -14,6 +14,7 @@ export default defineConfig({
   ],
    build: {
     minify: 'terser', // Ensure minification is enabled (default in production)
+    sourcemap: false, // Disable sourcemaps in production
   },
   define: {
     'process.env.NODE_ENV': JSON.stringify('production'), // Force production mode
