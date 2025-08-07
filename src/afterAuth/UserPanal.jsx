@@ -12,11 +12,13 @@ import {
   FiBell
 } from 'react-icons/fi';
 import { useNavigate, Outlet, Link, useLocation } from 'react-router-dom';
+import { UserContextPro } from '../contestApi/UserContextProvider';
 
 const UserPanel = () => {
   const [notifications] = useState(3);
   const navigate = useNavigate();
   const location = useLocation(); // Get current location
+  const Users = UserContextPro()
 
   const tools = [
     { id: 'dashboard', icon: <FiGrid />, name: 'Dashboard', path: '/home' },
@@ -30,6 +32,7 @@ const UserPanel = () => {
   const handleLogout = () => {
     localStorage.removeItem('authToken');
     localStorage.removeItem('role');
+    Users.setRole('guest')
     navigate('/');
   };
 

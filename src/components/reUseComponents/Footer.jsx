@@ -1,14 +1,21 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { 
   FaFacebook, FaTwitter, FaInstagram, FaLinkedin, 
   FaMapMarkerAlt, FaPhone, FaEnvelope, FaUserCircle 
 } from 'react-icons/fa';
+import { Link } from 'react-router-dom';
 // import { useAuth } from './AuthContext'; // Assume you have an auth context
 
 const Footer = () => {
   const [email, setEmail] = useState('');
-  const { isLoggedIn, setisLoggedIn } = useState(false); // Get auth state from context
+  const [ isLoggedIn, setisLoggedIn ] = useState(false); // Get auth state from context
   const currentYear = new Date().getFullYear();
+
+  useEffect(() => {
+    const role = localStorage.getItem('role');
+    const auth = localStorage.getItem('authToken');
+    setisLoggedIn(!!(role === 'user' && auth));
+  }, []);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -16,6 +23,14 @@ const Footer = () => {
     setEmail('');
   };
 
+  const handelDarkMode=(e)=>{
+    const role = localStorage.getItem('theme');
+    const newTheme = role === 'light' ? 'dark' : 'light';
+    localStorage.setItem('theme',newTheme)
+    const htmlElement = document.documentElement;
+    htmlElement.classList.remove('light', 'dark');
+    htmlElement.classList.add(newTheme);
+  }
   return (
     <footer className="bg-gray-900 text-gray-300 pt-12 pb-6 border-t border-gray-800">
       <div className="container mx-auto px-4">
@@ -60,31 +75,31 @@ const Footer = () => {
             <h3 className="text-lg font-semibold text-white">Quick Links</h3>
             <ul className="space-y-2">
               <li>
-                <a href="#" className="text-gray-400 hover:text-red-400 transition-colors">
+                <Link to={'/'} className="text-gray-400 hover:text-red-400 transition-colors">
                   Home
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="text-gray-400 hover:text-red-400 transition-colors">
+                <Link to={'/services'} className="text-gray-400 hover:text-red-400 transition-colors">
                   Services
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="text-gray-400 hover:text-red-400 transition-colors">
-                  Portfolio
-                </a>
+                <Link to={'/about'} className="text-gray-400 hover:text-red-400 transition-colors">
+                  About
+                </Link>
               </li>
-              {isLoggedIn && (
+              {/* {isLoggedIn && (
                 <li>
                   <a href="#" className="text-gray-400 hover:text-red-400 transition-colors">
                     Dashboard
                   </a>
                 </li>
-              )}
+              )} */}
               <li>
-                <a href="#" className="text-gray-400 hover:text-red-400 transition-colors">
-                  Blog
-                </a>
+                <Link to={'/contact'} className="text-gray-400 hover:text-red-400 transition-colors">
+                  Contact
+                </Link>
               </li>
             </ul>
           </div>
@@ -117,7 +132,7 @@ const Footer = () => {
 
           {/* Newsletter & Auth Status */}
           <div className="space-y-4">
-            {isLoggedIn ? (
+            {/* {isLoggedIn ? (
               <div className="flex items-center space-x-3">
                 <FaUserCircle className="w-10 h-10 text-red-500" />
                 <div>
@@ -131,8 +146,8 @@ const Footer = () => {
                   </a>
                 </div>
               </div>
-            ) : (
-              <>
+            ) : ( */}
+              {/* <> */}
                 <h3 className="text-lg font-semibold text-white">Dark Newsletter</h3>
                 <p className="text-gray-400">
                   Subscribe to our underground updates and exclusive offers.
@@ -153,14 +168,14 @@ const Footer = () => {
                     Subscribe
                   </button>
                 </form>
-                <div className="flex space-x-2 text-sm">
+                {/* <div className="flex space-x-2 text-sm">
                   <span className="text-gray-500">Already a member?</span>
                   <a href="/login" className="text-red-400 hover:text-red-300">
                     Sign In
                   </a>
-                </div>
-              </>
-            )}
+                </div> */}
+              {/* </>
+            )} */}
           </div>
         </div>
 
@@ -177,14 +192,14 @@ const Footer = () => {
               <a href="#" className="text-gray-500 hover:text-red-400 text-sm transition-colors">
                 Terms of Service
               </a>
-              <a href="#" className="text-gray-500 hover:text-red-400 text-sm transition-colors">
+              <div className="cursor-pointer text-gray-500 hover:text-red-400 text-sm transition-colors" onClick={handelDarkMode}>
                 Dark Mode
-              </a>
-              {isLoggedIn && (
+              </div>
+              {/* {isLoggedIn && (
                 <a href="/logout" className="text-gray-500 hover:text-red-400 text-sm transition-colors">
                   Sign Out
                 </a>
-              )}
+              )} */}
             </div>
           </div>
         </div>

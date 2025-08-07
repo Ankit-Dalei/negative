@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useLocation, Link } from 'react-router-dom';
+import { useLocation, Link, useNavigate } from 'react-router-dom';
 import { FaUserCircle } from 'react-icons/fa';
 
 const Header = () => {
@@ -8,6 +8,7 @@ const Header = () => {
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const [activeLink, setActiveLink] = useState('');
   const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     setActiveLink(location.pathname);
@@ -37,10 +38,27 @@ const Header = () => {
     { path: '/contact', name: 'Contact' },
   ];
 
+  useEffect(()=>{
+    const auth = localStorage.getItem('authToken')
+    const role = localStorage.getItem('role')
+    if (role=='user' && auth) {
+      setIsLoggedIn(true)
+      setShowProfileDropdown(false)
+    } else {
+      setIsLoggedIn(false)
+      setShowProfileDropdown(false)
+    }
+  },[])
+
   const handleLogout = () => {
     // In a real app, you would handle logout logic here
     setIsLoggedIn(false);
     setShowProfileDropdown(false);
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('role');
+    users.setRole('guest')
+    navigate('/');
+    
   };
 
   return (
@@ -102,7 +120,7 @@ const Header = () => {
                     <FaUserCircle className="w-8 h-8" />
                   </button>
                   {showProfileDropdown && (
-                    <div className="absolute right-0 mt-2 w-48 bg-gray-800 rounded-md shadow-lg py-1 z-10 border border-gray-700">
+                    <div className="absolute right-0 mt-2 w-48 bg-gray-800 rounded-md shadow-lg py-1 z-100 border border-gray-700">
                       <Link
                         to="/profile"
                         onClick={() => setShowProfileDropdown(false)}
@@ -124,12 +142,12 @@ const Header = () => {
                       >
                         Your Orders
                       </Link>
-                      <button
+                      <div
                         onClick={handleLogout}
-                        className="block w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white border-t border-gray-700"
+                        className="block w-full text-left px-4 py-2 text-sm cursor-pointer text-gray-300 hover:bg-gray-700 hover:text-white border-t border-gray-700"
                       >
                         Sign Out
-                      </button>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -148,7 +166,7 @@ const Header = () => {
                   <FaUserCircle className="w-7 h-7" />
                 </button>
                 {showProfileDropdown && (
-                  <div className="absolute right-0 mt-2 w-48 bg-gray-800 rounded-md shadow-lg py-1 z-10 border border-gray-700">
+                  <div className="absolute right-0 mt-2  w-48 bg-gray-800 rounded-md shadow-lg py-1 z-100 border border-gray-700">
                     <Link
                       to="/profile"
                       onClick={() => {
@@ -171,7 +189,7 @@ const Header = () => {
                     </Link>
                     <button
                       onClick={handleLogout}
-                      className="block w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white border-t border-gray-700"
+                      className="block w-full text-left px-4 py-2 cursor-pointer text-sm text-gray-300 hover:bg-gray-700 hover:text-white border-t border-gray-700"
                     >
                       Sign Out
                     </button>

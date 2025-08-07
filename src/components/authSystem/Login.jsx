@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { FaLock, FaUser, FaEye, FaEyeSlash, FaArrowRight } from 'react-icons/fa';
 import { Link, useNavigate } from 'react-router-dom';
 import { GetUser } from '../../services/loginService/GetUser';
-import { useRole } from "../../contestApi/UserContextProvider";
+import { UserContextPro } from '../../contestApi/UserContextProvider';
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -16,7 +16,7 @@ const Login = () => {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const { setRole } = useRole();
+  const Users = UserContextPro()
   const navigate = useNavigate();
 
   const validateForm = () => {
@@ -82,7 +82,8 @@ const Login = () => {
       }
       // Handle successful login
       localStorage.setItem('authToken', data.token); // Store the token
-      setRole(`${data.role}` || "user")
+      Users.setRole(data.role)
+      // setRole(data.role)
       localStorage.setItem('role', data.role); // Store user data if needed
       navigate('/home'); // Redirect to dashboard
 

@@ -6,11 +6,13 @@ import {
   RouterProvider
 } from "react-router";
 import routes from './components/routers/Routes.jsx';
-
+import { UserContextProvider } from './contestApi/UserContextProvider.jsx';
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <RouterProvider router={routes}>
-      <App />
-    </RouterProvider>
+    <UserContextProvider>
+      <RouterProvider router={routes}>
+        <App />
+      </RouterProvider>
+    </UserContextProvider>
   </StrictMode>,
 )

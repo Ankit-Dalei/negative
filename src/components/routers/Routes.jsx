@@ -2,7 +2,7 @@ import {
   createBrowserRouter,
   Navigate,
 } from "react-router-dom";
-import { useRole } from "../../contestApi/UserContextProvider";
+import { UserContextPro } from "../../contestApi/UserContextProvider";
 
 // Common pages
 import NavCombo from '../reUseComponents/NavCombo'
@@ -29,10 +29,15 @@ import Security from "../../afterAuth/Security";
 
 // Protected route handler
 const ProtectedRoute = ({ allowedRoles, children }) => {
+  const auth = localStorage.getItem('authToken')
   const role = localStorage.getItem('role')
-  console.log(role)
+  let Users = UserContextPro() 
+  let user=Users.role
+  if(role && auth){
+    user='user'
+  }
 
-  if (!allowedRoles.includes(role)) {
+  if (!allowedRoles.includes(user)) {
     return <Navigate to="/" replace />;
   }
 
