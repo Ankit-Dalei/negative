@@ -4,19 +4,10 @@ import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig({
   server: {
-    port: parseInt(process.env.PORT) || 4040,
-    host: '0.0.0.0',
-    allowedHosts: ['negative-burm.onrender.com']
+    port: parseInt(process.env.PORT)
   },
   plugins: [
     react(),
     tailwindcss()
-  ],
-   build: {
-    minify: 'terser', // Ensure minification is enabled (default in production)
-    sourcemap: false, // Disable sourcemaps in production
-  },
-  define: {
-    'process.env.NODE_ENV': JSON.stringify('production'), // Force production mode
-  },
+  ]
 })

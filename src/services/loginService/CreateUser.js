@@ -1,10 +1,10 @@
 export const CreateUserData = async (data) => {
   try {
-    const response = await fetch(process.env.BASE_URL+`Signdata`, {
+    const response = await fetch(`${import.meta.env.VITE_API_BASE}Signdata`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer YOUR_API_KEY_HERE' // If your API requires authentication
+        // 'Authorization': 'Bearer YOUR_API_KEY_HERE' // If your API requires authentication
       },
       body: JSON.stringify(data)
     });
