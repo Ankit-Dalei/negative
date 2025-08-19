@@ -4,7 +4,7 @@ export const CreateUserData = async (data) => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        // 'Authorization': 'Bearer YOUR_API_KEY_HERE' // If your API requires authentication
+        // 'Authorization': 'Bearer YOUR_API_KEY_HERE'
       },
       body: JSON.stringify(data)
     });

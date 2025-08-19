@@ -1,78 +1,53 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { 
-  FiFolder, 
-  FiFile, 
-  FiImage, 
-  FiUpload, 
-  FiPlus,
-  FiStar,
-  FiMoreVertical,
-  FiDownload,
-  FiShare2,
-  FiTrash2,
-  FiSearch,
-  FiClock,
-  FiGrid,
-  FiList
+  FiFolder, FiFile, FiImage, FiUpload, FiPlus,
+  FiStar, FiMoreVertical, FiDownload, FiShare2,
+  FiTrash2, FiSearch, FiClock, FiGrid, FiList, FiGitBranch
 } from 'react-icons/fi';
 import { CloudDataFetch } from '../services/cloudService/CloudDataFetch';
+import DragDropUpload from '../components/reUseComponents/DragDropUpload';
 
 const DarkDrive = () => {
-  const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'list'
-  const [showNewFolderModal, setShowNewFolderModal] = useState(false);
-  const [newFolderName, setNewFolderName] = useState('');
+  const [viewMode, setViewMode] = useState('grid');
+  const [showNewMenu, setShowNewMenu] = useState(false);
   const [selectedItems, setSelectedItems] = useState([]);
   const [folders, setFolders] = useState([]);
   const [files, setFiles] = useState([]);
+  const [uploadhook, setUploadhook] = useState(false);
+  const dropdownRef = useRef(null);
 
   useEffect(() => {
-  const fetchData = async () => {
-    try {
-      const id = localStorage.getItem('authToken');
-      const response = await CloudDataFetch(id);
+    const fetchData = async () => {
+      try {
+        const id = localStorage.getItem('authToken');
+        const response = await CloudDataFetch(id);
 
-      if (Array.isArray(response)) {
-        // Separate folders and files
-        const foldersData = response.filter(item => item.storeType === "Folder");
-        const filesData = response.filter(item => item.storeType !== "Folder");
-        setFolders(foldersData);
-        setFiles(filesData); // make sure you have setFiles state
-      } else {
-        console.warn("Unexpected response format:", response);
+        if (Array.isArray(response)) {
+          const foldersData = response.filter(item => item.storeType === "Folder");
+          const filesData = response.filter(item => item.storeType !== "Folder");
+          setFolders(foldersData);
+          setFiles(filesData);
+        } else {
+          console.warn("Unexpected response format:", response);
+        }
+      } catch (error) {
+        console.error('Error fetching data:', error);
       }
-    } catch (error) {
-      console.error('Error fetching data:', error);
-    }
-  };
+    };
 
-  fetchData();
+    fetchData();
   }, []);
 
-
-  // useEffect(()=>{
-  // },[files])
-
-  // Sample data
-  // const folders = [
-  //   { id: 1, name: 'teralogic', location: 'My Drive', starred: true },
-  //   { id: 2, name: 'resume', location: 'My Drive', starred: false },
-  //   { id: 3, name: 'angular', location: 'My Drive', starred: true },
-  //   { id: 4, name: 'Personal', location: 'My Drive', starred: false },
-  // ];
-
-  // const files = [
-  //   { id: 5, name: 'newResume.pdf', author: 'ANKIT DALEI', modified: 'Jul 16, 2025', opened: 'Jul 26, 2025', starred: true },
-  //   { id: 6, name: 'Adresume.pdf', author: 'ANKIT DALEI', modified: 'Dec 27, 2024', opened: 'May 11, 2025', starred: false },
-  //   { id: 7, name: 'Screenshot_2023-08-07-00-0.png', modified: 'Aug 7, 2023', opened: 'Sep 1, 2023', starred: false },
-  //   { id: 8, name: 'Screenshot_2023-02-21-00-5.png', modified: 'Feb 21, 2023', opened: 'Mar 15, 2023', starred: false },
-  //   { id: 9, name: 'Angular 18.rar', modified: 'Jan 5, 2024', opened: 'Feb 10, 2024', starred: true },
-  // ];
-
-  const toggleStar = (id, e) => {
-    e.stopPropagation();
-    // In a real app, update the starred status
-    console.log(`Toggled star for item ${id}`);
-  };
+  // Close dropdown if clicked outside
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setShowNewMenu(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const toggleSelect = (id) => {
     setSelectedItems(prev => 
@@ -80,14 +55,11 @@ const DarkDrive = () => {
     );
   };
 
-  // const createNewFolder = () => {
-  //   if (newFolderName.trim()) {
-  //     // In a real app, add to folders array
-  //     console.log(`Created new folder: ${newFolderName}`);
-  //     setNewFolderName('');
-  //     setShowNewFolderModal(false);
-  //   }
-  // };
+  const uploadFile=(e)=>{
+    // console.log(e)
+    setUploadhook(true)
+    setShowNewMenu(false)
+  }
 
   return (
     <div className="min-h-screen bg-gray-900 text-gray-200 p-6">
@@ -108,18 +80,44 @@ const DarkDrive = () => {
             />
           </div>
           
-          <button 
-            onClick={() => setShowNewFolderModal(true)}
-            className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition-colors"
-          >
-            <FiPlus size={18} />
-            <span>New</span>
-          </button>
+          {/* New Button with Dropdown */}
+          <div className="relative" ref={dropdownRef}>
+            <button 
+              onClick={() => setShowNewMenu(!showNewMenu)}
+              className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition-colors"
+            >
+              <FiPlus size={18} />
+              <span>New</span>
+            </button>
+
+            {showNewMenu && (
+              <div className="absolute right-0 mt-2 w-48 bg-gray-800 border border-gray-700 rounded-lg shadow-lg overflow-hidden z-50">
+                <button 
+                  onClick={() => { setShowNewMenu(false); alert('Create Folder clicked'); }}
+                  className="flex items-center gap-2 px-4 py-2 hover:bg-gray-700 w-full text-left"
+                >
+                  <FiFolder /> Create Folder
+                </button>
+                <button 
+                  onClick={() => {uploadFile("file")}}
+                  className="flex items-center gap-2 px-4 py-2 hover:bg-gray-700 w-full text-left"
+                >
+                  <FiUpload /> Upload File
+                </button>
+                <button 
+                  onClick={() => { setShowNewMenu(false); alert('Git Clone clicked'); }}
+                  className="flex items-center gap-2 px-4 py-2 hover:bg-gray-700 w-full text-left"
+                >
+                  <FiGitBranch /> Git Clone
+                </button>
+              </div>
+            )}
+          </div>
           
-          <button className="flex items-center gap-2 bg-gray-800 hover:bg-gray-700 border border-gray-700 text-gray-200 px-4 py-2 rounded-lg transition-colors">
+          {/* <button className="flex items-center gap-2 bg-gray-800 hover:bg-gray-700 border border-gray-700 text-gray-200 px-4 py-2 rounded-lg transition-colors">
             <FiUpload size={18} />
             <span>Upload</span>
-          </button>
+          </button>*/}
         </div>
       </div>
 
@@ -323,6 +321,7 @@ const DarkDrive = () => {
           </div>
         </div>
       )} */}
+      {uploadhook?<DragDropUpload/>:''}
     </div>
   );
 };

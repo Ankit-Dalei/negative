@@ -112,7 +112,17 @@ const Header = () => {
                   </Link>
                 </>
               ) : (
-                <div className="relative">
+                <div className="relative flex gap-4">
+                  <Link
+                    to="/home"
+                    className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors duration-200 ${
+                      activeLink === '/signup'
+                        ? 'bg-red-600 text-white'
+                        : 'bg-red-900 text-red-300 hover:bg-red-800'
+                    }`}
+                  >
+                    Dashboard
+                  </Link>
                   <button
                     onClick={() => setShowProfileDropdown(!showProfileDropdown)}
                     className="flex items-center text-gray-300 hover:text-red-400 focus:outline-none"
@@ -158,7 +168,17 @@ const Header = () => {
           {/* Mobile menu button */}
           <div className="md:hidden flex items-center">
             {isLoggedIn && (
-              <div className="relative mr-4">
+              <div className="relative mr-4 flex gap-3">
+                <Link
+                    to="/home"
+                    className={`px-2 py-1 text-sm font-sm rounded-md transition-colors duration-200 ${
+                      activeLink === '/signup'
+                        ? 'bg-red-600 text-white'
+                        : 'bg-red-900 text-red-300 hover:bg-red-800'
+                    }`}
+                >
+                  Dashboard
+                </Link>
                 <button
                   onClick={() => setShowProfileDropdown(!showProfileDropdown)}
                   className="flex items-center text-gray-300 hover:text-red-400 focus:outline-none"
