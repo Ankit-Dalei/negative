@@ -6,6 +6,7 @@ import {
 } from 'react-icons/fi';
 import { CloudDataFetch } from '../services/cloudService/CloudDataFetch';
 import DragDropUpload from '../components/reUseComponents/DragDropUpload';
+import DeleteFile from '../services/cloudService/DeleteFile';
 
 const DarkDrive = () => {
   const [viewMode, setViewMode] = useState('grid');
@@ -14,6 +15,7 @@ const DarkDrive = () => {
   const [folders, setFolders] = useState([]);
   const [files, setFiles] = useState([]);
   const [uploadhook, setUploadhook] = useState(false);
+  const [refresh, setRefresh] = useState(true);
   const dropdownRef = useRef(null);
 
   useEffect(() => {
@@ -34,9 +36,9 @@ const DarkDrive = () => {
         console.error('Error fetching data:', error);
       }
     };
-
+    
     fetchData();
-  }, []);
+  }, [refresh]);
 
   // Close dropdown if clicked outside
   useEffect(() => {
@@ -60,6 +62,35 @@ const DarkDrive = () => {
     setUploadhook(true)
     setShowNewMenu(false)
   }
+
+  const handelDelete = async () => {
+    try {
+      const id = localStorage.getItem("authToken");
+  
+      if (!id) {
+        console.error("No auth token found in localStorage");
+        return;
+      }
+  
+      if (!selectedItems || selectedItems.length === 0) {
+        console.warn("No items selected for deletion");
+        return;
+      }
+  
+      const response = await DeleteFile(selectedItems, id);
+  
+      if (response.success) {
+        console.log("✅ Deleted:", response.deleted);
+        setRefresh((prev) => !prev);
+        setSelectedItems([])
+      } else {
+        console.error("❌ Delete failed:", response.message);
+      }
+    } catch (error) {
+      console.error("Error deleting files:", error.message || error);
+    }
+  };
+
 
   return (
     <div className="min-h-screen bg-gray-900 text-gray-200 p-6">
@@ -149,7 +180,7 @@ const DarkDrive = () => {
           <button className="text-gray-300 hover:text-indigo-400 p-2">
             <FiShare2 size={18} />
           </button>
-          <button className="text-gray-300 hover:text-red-400 p-2">
+          <button className="text-gray-300 hover:text-red-400 p-2" onClick={handelDelete}>
             <FiTrash2 size={18} />
           </button>
         </div>
@@ -167,13 +198,13 @@ const DarkDrive = () => {
             {folders.map(folder => (
               <div 
                 key={folder._id}
-                onClick={() => toggleSelect(folder._id)}
-                className={`p-4 rounded-xl border ${selectedItems.includes(folder._id) ? 'border-indigo-500 bg-gray-800' : 'border-gray-700 hover:border-gray-600'} bg-gray-800/50 hover:bg-gray-800/80 transition-all cursor-pointer`}
+                onClick={() => toggleSelect(folder.id)}
+                className={`p-4 rounded-xl border ${selectedItems.includes(folder.id) ? 'border-indigo-500 bg-gray-800' : 'border-gray-700 hover:border-gray-600'} bg-gray-800/50 hover:bg-gray-800/80 transition-all cursor-pointer`}
               >
                 <div className="flex justify-between items-start">
                   <FiFolder className="text-indigo-400 text-2xl" />
                   <button 
-                    onClick={(e) => toggleStar(folder._id, e)}
+                    onClick={(e) => toggleStar(folder.id, e)}
                     className={`${folder.starred ? 'text-yellow-400' : 'text-gray-500 hover:text-yellow-400'}`}
                   >
                     <FiStar size={16} />
@@ -189,8 +220,8 @@ const DarkDrive = () => {
             {folders.map(folder => (
               <div 
                 key={folder._id}
-                onClick={() => toggleSelect(folder._id)}
-                className={`flex items-center p-4 hover:bg-gray-800/50 ${selectedItems.includes(folder._id) ? 'bg-gray-800' : ''} border-b border-gray-700 last:border-b-0 cursor-pointer`}
+                onClick={() => toggleSelect(folder.id)}
+                className={`flex items-center p-4 hover:bg-gray-800/50 ${selectedItems.includes(folder.id) ? 'bg-gray-800' : ''} border-b border-gray-700 last:border-b-0 cursor-pointer`}
               >
                 <FiFolder className="text-indigo-400 text-xl mr-4" />
                 <div className="flex-grow">
@@ -198,7 +229,7 @@ const DarkDrive = () => {
                   <p className="text-sm text-gray-400">my drive</p>
                 </div>
                 <button 
-                  onClick={(e) => toggleStar(folder._id, e)}
+                  onClick={(e) => toggleStar(folder.id, e)}
                   className={`ml-4 ${folder.starred ? 'text-yellow-400' : 'text-gray-500 hover:text-yellow-400'}`}
                 >
                   <FiStar size={16} />
@@ -221,13 +252,13 @@ const DarkDrive = () => {
             {files.map(file => (
               <div 
                 key={file._id}
-                onClick={() => toggleSelect(file._id)}
-                className={`p-4 rounded-xl border ${selectedItems.includes(file._id) ? 'border-indigo-500 bg-gray-800' : 'border-gray-700 hover:border-gray-600'} bg-gray-800/50 hover:bg-gray-800/80 transition-all cursor-pointer`}
+                onClick={() => toggleSelect(file.id)}
+                className={`p-4 rounded-xl border ${selectedItems.includes(file.id) ? 'border-indigo-500 bg-gray-800' : 'border-gray-700 hover:border-gray-600'} bg-gray-800/50 hover:bg-gray-800/80 transition-all cursor-pointer`}
               >
                 <div className="flex justify-between items-start">
                   <FiFile className="text-indigo-400 text-2xl" />
                   <button 
-                    onClick={(e) => toggleStar(file._id, e)}
+                    onClick={(e) => toggleStar(file.id, e)}
                     className={`${file.starred ? 'text-yellow-400' : 'text-gray-500 hover:text-yellow-400'}`}
                   >
                     <FiStar size={16} />
@@ -247,8 +278,8 @@ const DarkDrive = () => {
             {files.map(file => (
               <div 
                 key={file._id}
-                onClick={() => toggleSelect(file._id)}
-                className={`flex items-center p-4 hover:bg-gray-800/50 ${selectedItems.includes(file._id) ? 'bg-gray-800' : ''} border-b border-gray-700 last:border-b-0 cursor-pointer`}
+                onClick={() => toggleSelect(file.id)}
+                className={`flex items-center p-4 hover:bg-gray-800/50 ${selectedItems.includes(file.id) ? 'bg-gray-800' : ''} border-b border-gray-700 last:border-b-0 cursor-pointer`}
               >
                 <FiFile className="text-indigo-400 text-xl mr-4" />
                 <div className="flex-grow">
@@ -321,7 +352,7 @@ const DarkDrive = () => {
           </div>
         </div>
       )} */}
-      {uploadhook?<DragDropUpload/>:''}
+      {uploadhook?<DragDropUpload setUploadhook={setUploadhook} setRefresh={setRefresh}/>:''}
     </div>
   );
 };

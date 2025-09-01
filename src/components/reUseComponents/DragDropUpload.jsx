@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import { uploadFile } from "../../services/cloudService/uploadFileService";
 
-const DragDropUpload = ({ onClose }) => {
+const DragDropUpload = ({ onClose,setUploadhook,refresh,setRefresh }) => {
   const [dragActive, setDragActive] = useState(false);
   const [file, setFile] = useState(null); 
   const [loading, setLoading] = useState(false);
@@ -37,17 +37,19 @@ const DragDropUpload = ({ onClose }) => {
       storeName: file.name,
       file: file
     };
-  console.log(uploadData)
     try {
       const id = localStorage.getItem('authToken');
       const result = await uploadFile(uploadData,id);
       if (result.success) {
-        alert("✅ Upload successfully!");
+        console.log("✅ Upload successfully!");
         setFile(null);
+        setUploadhook(false);
+        setRefresh(prev => !prev);
         onClose?.();
       }
     } catch (error) {
-      alert(`❌ Upload failed: ${error.message}`);
+      console.log(error.message)
+
     } finally {
       setLoading(false);
     }

@@ -52,7 +52,7 @@ const UserPanel = () => {
     <div className="flex flex-col md:flex-row h-screen bg-gray-900 text-gray-200">
       {/* Mobile Header */}
       <header className="md:hidden bg-gray-800 border-b border-gray-700 p-4 flex justify-between items-center">
-        <h1 className="text-xl font-bold text-indigo-400">NEGATIVE</h1>
+        <Link to={'/'} className="text-xl font-bold text-indigo-400 cursor">NEGATIVE</Link>
         <button 
           onClick={toggleMobileMenu}
           className="p-2 rounded-md hover:bg-gray-700 focus:outline-none"
@@ -106,7 +106,7 @@ const UserPanel = () => {
       {/* Sidebar Navigation - Desktop */}
       <div className="hidden md:flex md:w-64 bg-gray-800 border-r border-gray-700 flex-col">
         <div className="p-4 border-b border-gray-700">
-          <h1 className="text-xl font-bold text-indigo-400">NEGATIVE</h1>
+          <Link to={'/'} className="text-xl font-bold text-indigo-400">NEGATIVE</Link>
           <p className="text-sm text-gray-400">Developer Tools</p>
         </div>
         

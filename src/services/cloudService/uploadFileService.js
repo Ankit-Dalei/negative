@@ -1,9 +1,17 @@
-// services/uploadService.js
-export const uploadFile = async (data,id) => {
+export const uploadFile = async (data, id) => {
   try {
+    const formData = new FormData();
+    
+    // Assuming data contains { file: FileObject, fileName: string }
+    if (data.file) {
+      formData.append('file', data.file);
+    }
+    if (data.fileName) {
+      formData.append('fileName', data.fileName);
+    }
     const response = await fetch(`${import.meta.env.VITE_API_BASE}uploadFiles/${id}`, {
       method: "POST",
-      body: data,
+      body: formData,
     });
 
     if (!response.ok) {
@@ -17,7 +25,6 @@ export const uploadFile = async (data,id) => {
     } else {
       throw new Error(result.message || "File upload failed");
     }
-    
   } catch (error) {
     console.error("Upload error:", error);
     throw error;
