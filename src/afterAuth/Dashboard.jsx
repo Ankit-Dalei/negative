@@ -7,6 +7,8 @@ import {
 import { CloudDataFetch } from '../services/cloudService/CloudDataFetch';
 import DragDropUpload from '../components/reUseComponents/DragDropUpload';
 import DeleteFile from '../services/cloudService/DeleteFile';
+import { downloadZip } from '../services/cloudService/DownloadFile';
+import { getDownloadLink } from '../services/cloudService/ShareFile';
 
 const DarkDrive = () => {
   const [viewMode, setViewMode] = useState('grid');
@@ -16,6 +18,8 @@ const DarkDrive = () => {
   const [files, setFiles] = useState([]);
   const [uploadhook, setUploadhook] = useState(false);
   const [refresh, setRefresh] = useState(true);
+  const [popupOpen, setPopupOpen] = useState(false);
+  const [shareUrl, setShareUrl] = useState("");
   const dropdownRef = useRef(null);
 
   useEffect(() => {
@@ -90,6 +94,72 @@ const DarkDrive = () => {
       console.error("Error deleting files:", error.message || error);
     }
   };
+
+  const handelDownloads= async () => {
+     try {
+      const id = localStorage.getItem("authToken");
+  
+      if (!id) {
+        console.error("No auth token found in localStorage");
+        return;
+      }
+  
+      if (!selectedItems || selectedItems.length === 0) {
+        console.warn("No items selected for deletion");
+        return;
+      }
+  
+      const response = await downloadZip(selectedItems, id);
+
+      if (response.status==200) {
+        setSelectedItems([])
+      } else {
+        console.error("❌ Download Failed", response);
+      }
+    } catch (error) {
+      console.error("Error downloading files:", error.message || error);
+    }
+  }
+
+
+
+  const handleShare = async () => {
+    try {
+      const id = localStorage.getItem("authToken");
+
+      if (!id) {
+        console.error("No auth token found in localStorage");
+        return;
+      }
+
+      if (!selectedItems || selectedItems.length === 0) {
+        console.warn("No items selected for sharing");
+        return;
+      }
+
+      const url = await getDownloadLink(selectedItems, id);
+      if (!url) return;
+
+      setShareUrl(url);
+      setPopupOpen(true); // open popup
+    } catch (err) {
+      console.error("❌ Error sharing:", err);
+    }
+  };
+
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(shareUrl).then(() => {
+      alert("✅ Link copied to clipboard!");
+    });
+  };
+
+
+  const handelClose=()=>{
+    setPopupOpen(false)
+    setSelectedItems([])
+  }
+
 
 
   return (
@@ -174,10 +244,10 @@ const DarkDrive = () => {
       {selectedItems.length > 0 && (
         <div className="bg-gray-800 border border-gray-700 rounded-lg p-3 mb-4 flex items-center gap-4">
           <span className="text-gray-300">{selectedItems.length} selected</span>
-          <button className="text-gray-300 hover:text-indigo-400 p-2">
+          <button className="text-gray-300 hover:text-indigo-400 p-2" onClick={handelDownloads}>
             <FiDownload size={18} />
           </button>
-          <button className="text-gray-300 hover:text-indigo-400 p-2">
+          <button className="text-gray-300 hover:text-indigo-400 p-2" onClick={handleShare}>
             <FiShare2 size={18} />
           </button>
           <button className="text-gray-300 hover:text-red-400 p-2" onClick={handelDelete}>
@@ -352,6 +422,33 @@ const DarkDrive = () => {
           </div>
         </div>
       )} */}
+      {popupOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+          <div className="bg-white p-6 rounded-xl shadow-lg w-[400px] text-center">
+            <h2 className="text-lg font-semibold mb-4 text-black ">Share Link</h2>
+            <input
+              type="text"
+              value={shareUrl}
+              readOnly
+              className="w-full p-2 border rounded mb-4 border-blue-600 text-blue-400"
+            />
+            <div className="flex justify-center gap-4">
+              <button
+                onClick={handleCopy}
+                className="bg-blue-500 text-white px-4 py-2 rounded"
+              >
+                Copy
+              </button>
+              <button
+                onClick={handelClose}
+                className="bg-gray-400 text-white px-4 py-2 rounded"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {uploadhook?<DragDropUpload setUploadhook={setUploadhook} setRefresh={setRefresh}/>:''}
     </div>
   );

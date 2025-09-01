@@ -1,5 +1,3 @@
-import React from "react";
-
 const DeleteFile = async (keys, id) => {
   try {
     // keys is an array of file keys

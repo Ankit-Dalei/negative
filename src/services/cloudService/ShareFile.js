@@ -1,0 +1,27 @@
+export const getDownloadLink = async (keys, id) => {
+  try {
+    const response = await fetch(`${import.meta.env.VITE_API_BASE}ShareFile/${id}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(keys),
+    });
+
+    if (!response.ok) throw new Error("❌ Failed to generate link");
+
+    if (!response.ok) {
+      throw new Error("Network error during file delete");
+    }
+
+    const result = await response.json();
+    if (result.success === true) {
+      return result.url;
+    } else {
+      throw new Error(result.message || "File Delete failed");
+    }
+  } catch (error) {
+    console.error("Link generation failed:", error);
+    return null;
+  }
+};
