@@ -9,41 +9,62 @@ import DragDropUpload from '../components/reUseComponents/DragDropUpload';
 import DeleteFile from '../services/cloudService/DeleteFile';
 import { downloadZip } from '../services/cloudService/DownloadFile';
 import { getDownloadLink } from '../services/cloudService/ShareFile';
+import DragDropFolderUpload from '../components/reUseComponents/DragDropFolderUpload';
 
-const DarkDrive = () => {
+const Dashboard = () => {
   const [viewMode, setViewMode] = useState('grid');
   const [showNewMenu, setShowNewMenu] = useState(false);
   const [selectedItems, setSelectedItems] = useState([]);
   const [folders, setFolders] = useState([]);
   const [files, setFiles] = useState([]);
   const [uploadhook, setUploadhook] = useState(false);
+  const [uploadFolderhook, setUploadFolderhook] = useState(false);
   const [refresh, setRefresh] = useState(true);
   const [popupOpen, setPopupOpen] = useState(false);
   const [shareUrl, setShareUrl] = useState("");
   const dropdownRef = useRef(null);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const id = localStorage.getItem('authToken');
-        const response = await CloudDataFetch(id);
+useEffect(() => {
+  const fetchData = async () => {
+    try {
+      const id = localStorage.getItem('authToken');
+      const response = await CloudDataFetch(id);
+      // if (Array.isArray(response)) {
+      //   // Get all folder items
+        const allFolders = response.filter(item => item.storeType === "Folder");
+        
+        // Extract unique root directory names
+        // const rootFolders = [...new Set(
+        //   allFolders
+        //     .filter(item => item.id) // Filter out items with no path
+        //     .map(item => {
+        //       // Extract root directory name from path
+        //       const pathParts = item.id.split('/');
+        //       // let obj={
+        //       //   pathParts,
 
-        if (Array.isArray(response)) {
-          const foldersData = response.filter(item => item.storeType === "Folder");
-          const filesData = response.filter(item => item.storeType !== "Folder");
-          setFolders(foldersData);
-          setFiles(filesData);
-        } else {
-          console.warn("Unexpected response format:", response);
-        }
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      }
-    };
-    
-    fetchData();
-  }, [refresh]);
-
+        //       // }
+        //       // console.log(pathParts)
+        //       return pathParts[0]; // Get the first part (root directory)
+        //     })
+        // )];
+        
+        const filesData = response.filter(item => item.storeType !== "Folder");
+        // Set the root folders array and files data
+        // console.log(allFolders)
+        // console.log(filesData)
+        setFolders(allFolders);
+        setFiles(filesData);
+      // } else {
+      //   console.warn("Unexpected response format:", response);
+      // }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+  
+  fetchData();
+}, [refresh]);
   // Close dropdown if clicked outside
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -63,7 +84,15 @@ const DarkDrive = () => {
 
   const uploadFile=(e)=>{
     // console.log(e)
+    setUploadFolderhook(false)
     setUploadhook(true)
+    setShowNewMenu(false)
+  }
+
+  const upoloadFolder=(e)=>{
+    // console.log(e)
+    setUploadhook(false)
+    setUploadFolderhook(true)
     setShowNewMenu(false)
   }
 
@@ -194,10 +223,16 @@ const DarkDrive = () => {
             {showNewMenu && (
               <div className="absolute right-0 mt-2 w-48 bg-gray-800 border border-gray-700 rounded-lg shadow-lg overflow-hidden z-50">
                 <button 
-                  onClick={() => { setShowNewMenu(false); alert('Create Folder clicked'); }}
+                  onClick={() =>  { setShowNewMenu(false); alert('Git Clone clicked'); }}
                   className="flex items-center gap-2 px-4 py-2 hover:bg-gray-700 w-full text-left"
                 >
                   <FiFolder /> Create Folder
+                </button>
+                <button 
+                  onClick={() =>  upoloadFolder("Folder")}
+                  className="flex items-center gap-2 px-4 py-2 hover:bg-gray-700 w-full text-left"
+                >
+                  <FiFolder /> Upload Folder
                 </button>
                 <button 
                   onClick={() => {uploadFile("file")}}
@@ -268,13 +303,13 @@ const DarkDrive = () => {
             {folders.map(folder => (
               <div 
                 key={folder._id}
-                onClick={() => toggleSelect(folder.id)}
-                className={`p-4 rounded-xl border ${selectedItems.includes(folder.id) ? 'border-indigo-500 bg-gray-800' : 'border-gray-700 hover:border-gray-600'} bg-gray-800/50 hover:bg-gray-800/80 transition-all cursor-pointer`}
+                onClick={() => toggleSelect(folder._id)}
+                className={`p-4 rounded-xl border ${selectedItems.includes(folder._id) ? 'border-indigo-500 bg-gray-800' : 'border-gray-700 hover:border-gray-600'} bg-gray-800/50 hover:bg-gray-800/80 transition-all cursor-pointer`}
               >
                 <div className="flex justify-between items-start">
                   <FiFolder className="text-indigo-400 text-2xl" />
                   <button 
-                    onClick={(e) => toggleStar(folder.id, e)}
+                    onClick={(e) => toggleStar(folder._id, e)}
                     className={`${folder.starred ? 'text-yellow-400' : 'text-gray-500 hover:text-yellow-400'}`}
                   >
                     <FiStar size={16} />
@@ -290,8 +325,8 @@ const DarkDrive = () => {
             {folders.map(folder => (
               <div 
                 key={folder._id}
-                onClick={() => toggleSelect(folder.id)}
-                className={`flex items-center p-4 hover:bg-gray-800/50 ${selectedItems.includes(folder.id) ? 'bg-gray-800' : ''} border-b border-gray-700 last:border-b-0 cursor-pointer`}
+                onClick={() => toggleSelect(folder._id)}
+                className={`flex items-center p-4 hover:bg-gray-800/50 ${selectedItems.includes(folder._id) ? 'bg-gray-800' : ''} border-b border-gray-700 last:border-b-0 cursor-pointer`}
               >
                 <FiFolder className="text-indigo-400 text-xl mr-4" />
                 <div className="flex-grow">
@@ -299,7 +334,7 @@ const DarkDrive = () => {
                   <p className="text-sm text-gray-400">my drive</p>
                 </div>
                 <button 
-                  onClick={(e) => toggleStar(folder.id, e)}
+                  onClick={(e) => toggleStar(folder._id, e)}
                   className={`ml-4 ${folder.starred ? 'text-yellow-400' : 'text-gray-500 hover:text-yellow-400'}`}
                 >
                   <FiStar size={16} />
@@ -450,8 +485,9 @@ const DarkDrive = () => {
         </div>
       )}
       {uploadhook?<DragDropUpload setUploadhook={setUploadhook} setRefresh={setRefresh}/>:''}
+      {uploadFolderhook?<DragDropFolderUpload setUploadFolderhook={setUploadFolderhook} setRefresh={setRefresh}/>:''}
     </div>
   );
 };
 
-export default DarkDrive;
+export default Dashboard;
