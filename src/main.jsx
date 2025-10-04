@@ -5,12 +5,12 @@ import App from './App.jsx'
 import {
   RouterProvider
 } from "react-router";
-import routes from './components/routers/Routes.jsx';
+import AppRoutes from './components/routers/Routes.jsx';
 import { UserContextProvider } from './contestApi/UserContextProvider.jsx';
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <UserContextProvider>
-      <RouterProvider router={routes}>
+      <RouterProvider router={AppRoutes}>
         <App />
       </RouterProvider>
     </UserContextProvider>

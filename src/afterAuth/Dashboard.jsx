@@ -29,35 +29,48 @@ useEffect(() => {
     try {
       const id = localStorage.getItem('authToken');
       const response = await CloudDataFetch(id);
-      // if (Array.isArray(response)) {
-      //   // Get all folder items
-        const allFolders = response.filter(item => item.storeType === "Folder");
-        
-        // Extract unique root directory names
-        // const rootFolders = [...new Set(
-        //   allFolders
-        //     .filter(item => item.id) // Filter out items with no path
-        //     .map(item => {
-        //       // Extract root directory name from path
-        //       const pathParts = item.id.split('/');
-        //       // let obj={
-        //       //   pathParts,
+      const allFolders = response.filter(item => item.storeType === "Folder");
+      const folderMap = {};
 
-        //       // }
-        //       // console.log(pathParts)
-        //       return pathParts[0]; // Get the first part (root directory)
-        //     })
-        // )];
-        
+      allFolders
+        .filter(item => item.id)
+        .forEach(item => {
+          const pathParts = item.id.split('/');
+          const root = pathParts[0];
+          if (!folderMap[root]) {
+            folderMap[root] = { folderName: root, files: [], fileName: [] };
+          }
+          folderMap[root].files.push(item.id);
+
+          // Recursive function to build nested fileName structure
+          function addToFileName(parts, fullPath, arr) {
+            if (parts.length === 1) {
+              arr.push({
+                folderName: parts[0],
+                files: [fullPath],
+                fileName: parts[0],
+              });
+            } else {
+              let folder = arr.find(f => f.folderName === parts[0]);
+              if (!folder) {
+                folder = {
+                  folderName: parts[0],
+                  files: [fullPath],
+                  fileName: [],
+                };
+                arr.push(folder);
+              } else {
+                folder.files.push(fullPath);
+              }
+              addToFileName(parts.slice(1), fullPath, folder.fileName);
+            }
+          }
+
+          addToFileName(pathParts.slice(1), item.id, folderMap[root].fileName);
+        });
         const filesData = response.filter(item => item.storeType !== "Folder");
-        // Set the root folders array and files data
-        // console.log(allFolders)
-        // console.log(filesData)
-        setFolders(allFolders);
+        setFolders(Object.values(folderMap)); //
         setFiles(filesData);
-      // } else {
-      //   console.warn("Unexpected response format:", response);
-      // }
     } catch (error) {
       console.error('Error fetching data:', error);
     }
@@ -65,6 +78,9 @@ useEffect(() => {
   
   fetchData();
 }, [refresh]);
+
+
+useEffect(()=>{},[])
   // Close dropdown if clicked outside
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -77,9 +93,23 @@ useEffect(() => {
   }, []);
 
   const toggleSelect = (id) => {
-    setSelectedItems(prev => 
-      prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
-    );
+    console.log(id)
+    if (Array.isArray(id)) {
+      setSelectedItems(prev => {
+        const allSelected = id.every(item => prev.includes(item));
+        if (allSelected) {
+          // Deselect all
+          return prev.filter(item => !id.includes(item));
+        } else {
+          // Select all (avoid duplicates)
+          return [...new Set([...prev, ...id])];
+        }
+      });
+    } else {
+      setSelectedItems(prev =>
+        prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
+      );
+    }
   };
 
   const uploadFile=(e)=>{
@@ -137,7 +167,8 @@ useEffect(() => {
         console.warn("No items selected for deletion");
         return;
       }
-  
+
+      console.log(selectedItems)
       const response = await downloadZip(selectedItems, id);
 
       if (response.status==200) {
@@ -188,8 +219,9 @@ useEffect(() => {
     setPopupOpen(false)
     setSelectedItems([])
   }
-
-
+  useEffect(() => {
+    console.log(selectedItems)
+  }, [selectedItems]);
 
   return (
     <div className="min-h-screen bg-gray-900 text-gray-200 p-6">
@@ -300,41 +332,41 @@ useEffect(() => {
         
         {viewMode === 'grid' ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-            {folders.map(folder => (
+            {folders.map((folder,id) => (
               <div 
-                key={folder._id}
-                onClick={() => toggleSelect(folder._id)}
-                className={`p-4 rounded-xl border ${selectedItems.includes(folder._id) ? 'border-indigo-500 bg-gray-800' : 'border-gray-700 hover:border-gray-600'} bg-gray-800/50 hover:bg-gray-800/80 transition-all cursor-pointer`}
+                key={id}
+                onClick={() => toggleSelect(folder?.files)}
+                className={`p-4 rounded-xl border ${ folder.files.every(f => selectedItems.includes(f)) ? 'border-indigo-500 bg-gray-800' : 'border-gray-700 hover:border-gray-600' } bg-gray-800/50 hover:bg-gray-800/80 transition-all cursor-pointer`}
               >
                 <div className="flex justify-between items-start">
                   <FiFolder className="text-indigo-400 text-2xl" />
                   <button 
-                    onClick={(e) => toggleStar(folder._id, e)}
+                    onClick={(e) => toggleStar(id, e)}
                     className={`${folder.starred ? 'text-yellow-400' : 'text-gray-500 hover:text-yellow-400'}`}
                   >
                     <FiStar size={16} />
                   </button>
                 </div>
-                <h3 className="font-medium mt-2 truncate">{folder.storeName}</h3>
+                <h3 className="font-medium mt-2 truncate">{folder?.folderName}</h3>
                 <p className="text-xs text-gray-400 mt-1 truncate">my drive</p>
               </div>
             ))}
           </div>
         ) : (
           <div className="border border-gray-700 rounded-lg overflow-hidden">
-            {folders.map(folder => (
+            {folders.map((folder,id) => (
               <div 
-                key={folder._id}
-                onClick={() => toggleSelect(folder._id)}
-                className={`flex items-center p-4 hover:bg-gray-800/50 ${selectedItems.includes(folder._id) ? 'bg-gray-800' : ''} border-b border-gray-700 last:border-b-0 cursor-pointer`}
+                key={id}
+                onClick={() => toggleSelect(folder?.files)}
+                className={`flex items-center p-4 hover:bg-gray-800/50 ${folder.files.every(f => selectedItems.includes(f)) ? 'bg-gray-800' : ''} border-b border-gray-700 last:border-b-0 cursor-pointer`}
               >
                 <FiFolder className="text-indigo-400 text-xl mr-4" />
                 <div className="flex-grow">
-                  <h3 className="font-medium">{folder.storeName}</h3>
+                  <h3 className="font-medium">{folder?.folderName}</h3>
                   <p className="text-sm text-gray-400">my drive</p>
                 </div>
                 <button 
-                  onClick={(e) => toggleStar(folder._id, e)}
+                  onClick={(e) => toggleStar(id, e)}
                   className={`ml-4 ${folder.starred ? 'text-yellow-400' : 'text-gray-500 hover:text-yellow-400'}`}
                 >
                   <FiStar size={16} />
